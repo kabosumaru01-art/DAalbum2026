@@ -63,9 +63,9 @@ export const db = {
     async getMedia(albumId: string | null = null, searchQuery: string = '') {
         let query = supabase.from('media').select('*');
 
-        if (albumId && albumId !== 'root') {
+        if (albumId && albumId !== 'root' && albumId !== '') {
             query = query.eq('album_id', albumId);
-        } else if (albumId === 'root') {
+        } else if (albumId === 'root' || albumId === '' || albumId === null) {
             query = query.is('album_id', null);
         }
 

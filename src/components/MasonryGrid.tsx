@@ -2,65 +2,95 @@
 
 import React from 'react';
 import { Media } from '@/lib/db';
-import { Edit2, Trash2, ExternalLink } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 
 interface MasonryGridProps {
     items: Media[];
     onEdit: (item: Media) => void;
     onDelete: (item: Media) => void;
+    onImageClick: (item: Media) => void;
 }
 
-export const MasonryGrid: React.FC<MasonryGridProps> = ({ items, onEdit, onDelete }) => {
+export const MasonryGrid: React.FC<MasonryGridProps> = ({ items, onEdit, onDelete, onImageClick }) => {
+    if (items.length === 0) return null;
+
     return (
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 px-6 pb-20">
+        <div className="masonry-container">
             {items.map((item) => (
-                <div key={item.id} className="break-inside-avoid mb-4 group relative">
-                    <div className="masonry-item border border-gray-100 shadow-sm bg-white overflow-hidden rounded-xl">
+                <div key={item.id} className="masonry-card">
+                    {/* クリック可能なメディア領域 */}
+                    <div
+                        className="masonry-media-wrapper"
+                        onClick={() => onImageClick(item)}
+                    >
                         {item.type === 'image' ? (
                             <img
                                 src={item.url}
                                 alt={item.title || ''}
-                                className="w-full h-auto display-block"
+                                className="masonry-media"
                                 loading="lazy"
                             />
                         ) : (
                             <video
                                 src={item.url}
-                                className="w-full h-auto display-block"
-                                controls
+                                className="masonry-media"
+                                muted
+                                playsInline
                             />
                         )}
 
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
-                            <div className="text-white space-y-2">
-                                <h3 className="font-bold text-lg leading-tight truncate">{item.title}</h3>
-                                {item.description && (
-                                    <p className="text-xs text-gray-200 line-clamp-2 leading-relaxed pb-2 border-b border-white/20">
-                                        {item.description}
-                                    </p>
+                        {/* ホバーオーバーレイ */}
+                        <div className="masonry-overlay">
+                            <div className="masonry-overlay-content">
+                                {item.title && (
+                                    <h3 className="masonry-card-title">{item.title}</h3>
                                 )}
-                                <div className="flex items-center justify-between pt-1">
-                                    <span className="text-[10px] text-gray-300 font-medium">
-                                        {new Date(item.created_at!).toLocaleDateString('ja-JP')}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => onEdit(item)}
-                                            className="p-2 bg-white/20 hover:bg-white/40 rounded-full backdrop-blur-sm transition-colors"
-                                            title="編集"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => onDelete(item)}
-                                            className="p-2 bg-red-500/60 hover:bg-red-500 rounded-full backdrop-blur-sm transition-colors"
-                                            title="削除"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
+                                {item.description && (
+                                    <p className="masonry-card-desc">{item.description}</p>
+                                )}
                             </div>
+                            {/* 編集・削除ボタン（pointer-events: auto でクリック可能） */}
+                            <div className="masonry-overlay-actions">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onEdit(item); }}
+                                    className="masonry-overlay-btn"
+                                    title="編集"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onDelete(item); }}
+                                    className="masonry-overlay-btn masonry-overlay-btn-danger"
+                                    title="削除"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* カード下部の情報バー */}
+                    <div className="masonry-card-footer">
+                        <span className="masonry-card-date">
+                            {item.created_at
+                                ? new Date(item.created_at).toLocaleDateString('ja-JP')
+                                : ''}
+                        </span>
+                        <div className="masonry-card-actions">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onEdit(item); }}
+                                className="masonry-action-btn"
+                                title="編集"
+                            >
+                                <Edit2 size={14} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onDelete(item); }}
+                                className="masonry-action-btn masonry-action-btn-danger"
+                                title="削除"
+                            >
+                                <Trash2 size={14} />
+                            </button>
                         </div>
                     </div>
                 </div>
