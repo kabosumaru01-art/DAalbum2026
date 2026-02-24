@@ -20,8 +20,10 @@ export type Media = {
 export const db = {
     // Album operations
     async getAlbums(parentId: string | null = null) {
-        const query = supabase.from('albums').select('*');
-        if (parentId) {
+        let query = supabase.from('albums').select('*');
+        if (parentId === 'all') {
+            // allの場合は絞り込まない
+        } else if (parentId) {
             query.eq('parent_id', parentId);
         } else {
             query.is('parent_id', null);

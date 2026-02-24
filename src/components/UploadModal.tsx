@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Upload, File, Folder } from 'lucide-react';
+import { Album } from '@/lib/db';
 
 interface UploadModalProps {
     isOpen: boolean;
@@ -16,8 +17,20 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, album
     const [descriptions, setDescriptions] = useState<string[]>([]);
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
+    const [allAlbums, setAllAlbums] = useState<Album[]>([]);
+    const [selectedAlbumId, setSelectedAlbumId] = useState<string>(albumId || 'root');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            setSelectedAlbumId(albumId || 'root');
+            fetch('/api/albums?parentId=all')
+                .then(res => res.json())
+                .then(data => setAllAlbums(data))
+                .catch(console.error);
+        }
+    }, [isOpen, albumId]);
 
     if (!isOpen) return null;
 
@@ -47,7 +60,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, album
     };
 
     const handleUpload = async () => {
-        if (files.length === 0 || !albumId) return;
+        if (files.length === 0 || !selectedAlbumId) return;
 
         setUploading(true);
         setProgress(0);
@@ -62,7 +75,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, album
                     await fetch('/api/media', {
                         method: 'POST',
                         body: JSON.stringify({
-                            album_id: albumId,
+                            album_id: selectedAlbumId,
                             type,
                             url: res.secure_url,
                             title: titles[i] || file.name.split('.')[0],
@@ -96,6 +109,24 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, album
                 </div>
 
                 <div className="p-8 overflow-y-auto custom-scrollbar">
+                    <div className="mb-6">
+                        <label className="block text-sm font-bold text-gray-700 mb-2 border-l-4 border-[#db7093] pl-2">
+                            追加先アルバムの選択
+                        </label>
+                        <select
+                            value={selectedAlbumId}
+                            onChange={(e) => setSelectedAlbumId(e.target.value)}
+                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#db7093]/20 focus:border-[#db7093] font-medium text-gray-700 cursor-pointer appearance-none transition-all"
+                        >
+                            <option value="root">すべての写真と動画（一番上）</option>
+                            {allAlbums.map(album => (
+                                <option key={album.id} value={album.id}>
+                                    📁 {album.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="flex gap-4 mb-8">
                         <button
                             onClick={() => fileInputRef.current?.click()}
