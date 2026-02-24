@@ -6,7 +6,7 @@ import { MasonryGrid } from '@/components/MasonryGrid';
 import { AlbumList } from '@/components/AlbumList';
 import { UploadModal } from '@/components/UploadModal';
 import { Album, Media } from '@/lib/db';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight, Home as HomeIcon } from 'lucide-react';
 
 export default function Home() {
   const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
@@ -96,7 +96,7 @@ export default function Home() {
             onClick={() => handleBreadcrumbClick(-1)}
             className="hover:text-[#db7093] flex items-center gap-1 transition-colors"
           >
-            <Home className="w-4 h-4" />
+            <HomeIcon className="w-4 h-4" />
             トップ
           </button>
           {breadcrumbs.map((crumb, idx) => (

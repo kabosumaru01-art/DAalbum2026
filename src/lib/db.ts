@@ -105,14 +105,14 @@ export const db = {
         let currentId: string | null = albumId;
 
         while (currentId) {
-            const { data, error } = await supabase
+            const { data, error }: { data: Album | null; error: any } = await supabase
                 .from('albums')
                 .select('*')
                 .eq('id', currentId)
                 .single();
 
             if (error || !data) break;
-            breadcrumbs.unshift(data as Album);
+            breadcrumbs.unshift(data);
             currentId = data.parent_id;
         }
 
