@@ -31,22 +31,34 @@ export const MasonryGrid: React.FC<MasonryGridProps> = ({ items, onEdit, onDelet
                             />
                         )}
 
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                            <div className="flex items-center justify-between text-white">
-                                <span className="font-medium truncate mr-2">{item.title}</span>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => onEdit(item)}
-                                        className="p-1.5 bg-white/20 hover:bg-white/40 rounded-full backdrop-blur-sm transition-colors"
-                                    >
-                                        <Edit2 className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => onDelete(item)}
-                                        className="p-1.5 bg-red-500/80 hover:bg-red-500 rounded-full backdrop-blur-sm transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
+                            <div className="text-white space-y-2">
+                                <h3 className="font-bold text-lg leading-tight truncate">{item.title}</h3>
+                                {item.description && (
+                                    <p className="text-xs text-gray-200 line-clamp-2 leading-relaxed pb-2 border-b border-white/20">
+                                        {item.description}
+                                    </p>
+                                )}
+                                <div className="flex items-center justify-between pt-1">
+                                    <span className="text-[10px] text-gray-300 font-medium">
+                                        {new Date(item.created_at!).toLocaleDateString('ja-JP')}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => onEdit(item)}
+                                            className="p-2 bg-white/20 hover:bg-white/40 rounded-full backdrop-blur-sm transition-colors"
+                                            title="編集"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => onDelete(item)}
+                                            className="p-2 bg-red-500/60 hover:bg-red-500 rounded-full backdrop-blur-sm transition-colors"
+                                            title="削除"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

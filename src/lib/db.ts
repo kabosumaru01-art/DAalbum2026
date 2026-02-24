@@ -13,6 +13,7 @@ export type Media = {
     type: 'image' | 'video';
     url: string;
     title: string | null;
+    description: string | null;
     created_at?: string;
 };
 
@@ -60,12 +61,14 @@ export const db = {
     async getMedia(albumId: string | null = null, searchQuery: string = '') {
         let query = supabase.from('media').select('*');
 
-        if (albumId) {
+        if (albumId && albumId !== 'root') {
             query = query.eq('album_id', albumId);
+        } else if (albumId === 'root') {
+            query = query.is('album_id', null);
         }
 
         if (searchQuery) {
-            query = query.ilike('title', `%${searchQuery}%`);
+            query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
         }
 
         const { data, error } = await query.order('created_at', { ascending: false });
@@ -73,20 +76,31 @@ export const db = {
         return data as Media[];
     },
 
-    async addMedia(albumId: string, type: 'image' | 'video', url: string, title: string) {
+    async addMedia(albumId: string, type: 'image' | 'video', url: string, title: string, description: string = '') {
         const { data, error } = await supabase
             .from('media')
-            .insert([{ album_id: albumId, type, url, title }])
+            .insert([{
+                album_id: albumId === 'root' ? null : albumId,
+                type,
+                url,
+                title,
+                description
+            }])
             .select()
             .single();
         if (error) throw error;
         return data as Media;
     },
 
-    async updateMedia(id: string, title: string) {
+    async updateMedia(id: string, title: string, description?: string) {
+        const updateData: any = { title };
+        if (description !== undefined) {
+            updateData.description = description;
+        }
+
         const { data, error } = await supabase
             .from('media')
-            .update({ title })
+            .update(updateData)
             .eq('id', id)
             .select()
             .single();

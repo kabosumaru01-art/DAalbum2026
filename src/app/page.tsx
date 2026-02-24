@@ -62,13 +62,27 @@ export default function Home() {
   };
 
   const handleEditItem = async (item: Media | Album, type: 'album' | 'media') => {
-    const newTitle = prompt('新しいタイトルを入力してください:', 'title' in item ? item.title! : 'name' in item ? (item as any).name : '');
+    const isMedia = type === 'media';
+    const currentTitle = isMedia ? (item as Media).title || '' : (item as Album).name;
+    const currentDesc = isMedia ? (item as Media).description || '' : '';
+
+    const newTitle = prompt('タイトルを入力してください:', currentTitle);
     if (newTitle === null) return;
+
+    let newDesc = currentDesc;
+    if (isMedia) {
+      const descInput = prompt('説明入力してください（任意）:', currentDesc);
+      if (descInput !== null) newDesc = descInput;
+    }
 
     const endpoint = type === 'album' ? '/api/albums' : '/api/media';
     await fetch(endpoint, {
       method: 'PUT',
-      body: JSON.stringify({ id: item.id, [type === 'album' ? 'name' : 'title']: newTitle }),
+      body: JSON.stringify({
+        id: item.id,
+        [type === 'album' ? 'name' : 'title']: newTitle,
+        ...(isMedia ? { description: newDesc } : {})
+      }),
     });
     fetchData();
   };
