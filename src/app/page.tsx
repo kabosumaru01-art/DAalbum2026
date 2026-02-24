@@ -9,7 +9,7 @@ import { Lightbox } from '@/components/Lightbox';
 import { EditModal } from '@/components/EditModal';
 import { DeleteConfirmModal } from '@/components/DeleteConfirmModal';
 import { Album, Media } from '@/lib/db';
-import { ChevronRight, Home as HomeIcon } from 'lucide-react';
+import { ChevronRight, Home as HomeIcon, Plus, FolderPlus, X } from 'lucide-react';
 
 export default function Home() {
   const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
@@ -19,6 +19,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [fabOpen, setFabOpen] = useState(false);
 
   // 編集モーダル用ステート
   const [editTarget, setEditTarget] = useState<{
@@ -172,10 +173,10 @@ export default function Home() {
 
         {/* Current Album Header */}
         <div className="px-6 mb-10">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
+          <h1 className="page-title">
             {currentAlbum ? currentAlbum.name : 'すべての写真と動画'}
           </h1>
-          <p className="text-gray-500 mt-2 font-medium">
+          <p className="page-subtitle">
             {albums.length > 0 && `${albums.length}個のアルバム`}
             {albums.length > 0 && media.length > 0 && ' • '}
             {media.length > 0 && `${media.length}枚のメディア`}
@@ -229,6 +230,36 @@ export default function Home() {
         type={deleteTarget?.type || 'media'}
         itemTitle={deleteTarget?.title || ''}
       />
+      {/* モバイル専用 FAB（画面右下の固定ボタン） */}
+      <div className="fab-container">
+        {/* サブメニュー（開いた時のみ表示） */}
+        {fabOpen && (
+          <div className="fab-menu">
+            <button
+              className="fab-sub-btn"
+              onClick={() => { setFabOpen(false); handleCreateAlbum(); }}
+            >
+              <FolderPlus size={18} />
+              <span>新規アルバム</span>
+            </button>
+            <button
+              className="fab-sub-btn fab-sub-btn-primary"
+              onClick={() => { setFabOpen(false); setIsUploadOpen(true); }}
+            >
+              <Plus size={18} />
+              <span>写真を投稿</span>
+            </button>
+          </div>
+        )}
+        {/* メインFABボタン */}
+        <button
+          className={`fab-main ${fabOpen ? 'fab-main-open' : ''}`}
+          onClick={() => setFabOpen((v) => !v)}
+          aria-label="メニューを開く"
+        >
+          {fabOpen ? <X size={24} /> : <Plus size={24} />}
+        </button>
+      </div>
     </main>
   );
 }

@@ -56,6 +56,12 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, album
             }
         );
 
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('Cloudinary upload failed:', response.status, errText);
+            throw new Error(`Cloudinary upload failed: ${response.status}`);
+        }
+
         return await response.json();
     };
 
@@ -65,31 +71,64 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, album
         setUploading(true);
         setProgress(0);
 
+        let successCount = 0;
+        let failCount = 0;
+
         try {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const res = await uploadToCloudinary(file);
 
-                if (res.secure_url) {
-                    const type = file.type.startsWith('video') ? 'video' : 'image';
-                    await fetch('/api/media', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            album_id: selectedAlbumId,
-                            type,
-                            url: res.secure_url,
-                            title: titles[i] || file.name.split('.')[0],
-                            description: descriptions[i] || ''
-                        }),
-                    });
+                // 1. Cloudinaryにアップロード
+                const cloudinaryRes = await uploadToCloudinary(file);
+
+                if (!cloudinaryRes.secure_url) {
+                    console.error('Cloudinary response missing secure_url:', cloudinaryRes);
+                    failCount++;
+                    setProgress(Math.round(((i + 1) / files.length) * 100));
+                    continue;
                 }
+
+                // 2. Supabaseにメディア情報を保存
+                const type = file.type.startsWith('video') ? 'video' : 'image';
+                const saveRes = await fetch('/api/media', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        album_id: selectedAlbumId,
+                        type,
+                        url: cloudinaryRes.secure_url,
+                        title: titles[i] || file.name.split('.')[0],
+                        description: descriptions[i] || ''
+                    }),
+                });
+
+                if (!saveRes.ok) {
+                    const errData = await saveRes.json().catch(() => ({}));
+                    console.error('Failed to save media to DB:', saveRes.status, errData);
+                    failCount++;
+                } else {
+                    const savedData = await saveRes.json();
+                    console.log('Media saved successfully:', savedData);
+                    successCount++;
+                }
+
                 setProgress(Math.round(((i + 1) / files.length) * 100));
             }
-            onSuccess();
+
+            if (failCount > 0) {
+                alert(`${failCount}件の保存に失敗しました。コンソールを確認してください。`);
+            }
+
+            if (successCount > 0) {
+                // 保存成功した場合のみデータを再取得
+                onSuccess();
+            }
             onClose();
         } catch (error) {
             console.error('Upload failed:', error);
-            alert('アップロードに失敗しました。');
+            alert('アップロードに失敗しました。詳しくはコンソールを確認してください。');
         } finally {
             setUploading(false);
             setFiles([]);

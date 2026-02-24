@@ -63,10 +63,10 @@ export const db = {
     async getMedia(albumId: string | null = null, searchQuery: string = '') {
         let query = supabase.from('media').select('*');
 
+        // 特定アルバムが指定されている場合のみフィルタリング
+        // null / '' / 'root' の場合はフィルタなし → すべての写真を返す
         if (albumId && albumId !== 'root' && albumId !== '') {
             query = query.eq('album_id', albumId);
-        } else if (albumId === 'root' || albumId === '' || albumId === null) {
-            query = query.is('album_id', null);
         }
 
         if (searchQuery) {
@@ -77,6 +77,7 @@ export const db = {
         if (error) throw error;
         return data as Media[];
     },
+
 
     async addMedia(albumId: string, type: 'image' | 'video', url: string, title: string, description: string = '') {
         const { data, error } = await supabase
@@ -109,6 +110,17 @@ export const db = {
         if (error) throw error;
         return data as Media;
     },
+
+    async getMediaById(id: string) {
+        const { data, error } = await supabase
+            .from('media')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error) throw error;
+        return data as Media;
+    },
+
 
     async deleteMedia(id: string) {
         const { error } = await supabase.from('media').delete().eq('id', id);

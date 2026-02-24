@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Plus, FolderPlus } from 'lucide-react';
+import { Search, Plus, FolderPlus, X } from 'lucide-react';
 import Link from 'next/link';
 
 interface NavbarProps {
@@ -12,6 +12,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onSearch, onUpload, onCreateAlbum }) => {
     const [query, setQuery] = useState('');
+    const [searchOpen, setSearchOpen] = useState(false);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
@@ -19,39 +20,75 @@ export const Navbar: React.FC<NavbarProps> = ({ onSearch, onUpload, onCreateAlbu
         onSearch(val);
     };
 
+    const handleClear = () => {
+        setQuery('');
+        onSearch('');
+        setSearchOpen(false);
+    };
+
     return (
-        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-[#db7093] tracking-tight">
-                R5DA<span className="text-gray-900">アルバム</span>
+        <nav className="navbar">
+            {/* ロゴ */}
+            <Link href="/" className="navbar-logo">
+                R5DA<span className="navbar-logo-sub">アルバム</span>
             </Link>
 
-            <div className="flex-1 max-w-2xl mx-8 relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            {/* PC: 検索バー（中央） */}
+            <div className="navbar-search-pc">
+                <Search className="navbar-search-icon" />
                 <input
                     type="text"
                     placeholder="アルバムや写真を検索..."
                     value={query}
                     onChange={handleSearch}
-                    className="w-full bg-gray-100 border-transparent focus:bg-white focus:ring-2 focus:ring-[#db7093]/20 focus:border-[#db7093] rounded-full py-2.5 pl-12 pr-4 transition-all outline-none text-gray-700"
+                    className="navbar-search-input"
                 />
+                {query && (
+                    <button onClick={handleClear} className="navbar-search-clear">
+                        <X size={16} />
+                    </button>
+                )}
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* 右側ボタン群 */}
+            <div className="navbar-actions">
+                {/* モバイル: 検索アイコン */}
                 <button
-                    onClick={onCreateAlbum}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                    className="navbar-icon-btn navbar-search-toggle"
+                    onClick={() => setSearchOpen((v) => !v)}
+                    aria-label="検索"
                 >
-                    <FolderPlus className="w-4 h-4" />
-                    新規アルバム
+                    <Search size={20} />
                 </button>
-                <button
-                    onClick={onUpload}
-                    className="flex items-center gap-2 px-6 py-2 bg-[#db7093] hover:bg-[#c85a7d] text-white text-sm font-semibold rounded-full shadow-sm hover:shadow-md transition-all active:scale-95"
-                >
-                    <Plus className="w-5 h-5" />
-                    投稿
+
+                {/* PC: 新規アルバム・投稿ボタン */}
+                <button onClick={onCreateAlbum} className="navbar-btn-secondary">
+                    <FolderPlus size={16} />
+                    <span>新規アルバム</span>
+                </button>
+                <button onClick={onUpload} className="navbar-btn-primary">
+                    <Plus size={18} />
+                    <span>投稿</span>
                 </button>
             </div>
+
+            {/* モバイル: 展開する検索バー */}
+            {searchOpen && (
+                <div className="navbar-search-mobile">
+                    <Search className="navbar-search-icon" />
+                    <input
+                        type="text"
+                        placeholder="アルバムや写真を検索..."
+                        value={query}
+                        onChange={handleSearch}
+                        className="navbar-search-input"
+                        autoFocus
+                    />
+                    <button onClick={handleClear} className="navbar-search-clear">
+                        <X size={16} />
+                    </button>
+                </div>
+            )}
         </nav>
     );
 };
