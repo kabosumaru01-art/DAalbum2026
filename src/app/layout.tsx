@@ -4,6 +4,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "R5DAアルバム",
   description: "誰でも閲覧・投稿できるデジタルアルバム",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default function RootLayout({
