@@ -933,49 +933,162 @@ body {
   background: rgba(219, 112, 147, 0.08);
   border: 2px solid rgba(219, 112, 147, 0.2);
   border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  position: relative;
+  padding: 0;
 }
 
 .album-card:hover {
   background: rgba(219, 112, 147, 0.15);
   border-color: var(--primary);
+  box-shadow: 0 6px 16px rgba(219, 112, 147, 0.2);
 }
 
 .album-card:active {
   transform: scale(0.96);
 }
 
-.album-card-icon {
+/* ========================================
+   Album Cover (Pinterest Collage)
+   ======================================== */
+.album-cover-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Empty State */
+.album-cover-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.album-cover-empty-icon {
   width: 36px;
   height: 36px;
   color: var(--primary);
+  opacity: 0.8;
 }
 
 @media (min-width: 640px) {
-  .album-card-icon {
+  .album-cover-empty-icon {
     width: 44px;
     height: 44px;
   }
 }
 
-.album-card-name {
+.album-cover-empty-text {
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+/* Grids for 1-4 covers */
+.album-cover-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: 2px;
+}
+
+.album-cover-grid.grid-1 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.album-cover-grid.grid-2 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.album-cover-grid.grid-3 {
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.album-cover-grid.grid-3 .item-1 {
+  grid-row: 1 / span 2;
+}
+
+.album-cover-grid.grid-4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+.album-cover-item {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--muted);
+}
+
+.album-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.album-card:hover .album-cover-img {
+  transform: scale(1.05);
+  /* Smooth zoom effect on hover */
+}
+
+/* Overlay for album name */
+.album-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.2) 40%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+}
+
+/* When empty, remove dark overlay */
+.album-cover-empty+.album-cover-overlay {
+  background: none;
+  align-items: flex-end;
+  padding-bottom: 32px;
+}
+
+/* Hide album name entirely when empty, because we show "写真がありません" text and folder icon,
+   plus repeating name makes it cluttered. Wait, the user wants the album name.
+   I should move the album name overlay logic.
+   Actually, let's keep the name at the bottom even when empty, 
+   but change its color to foreground. */
+.album-cover-empty+.album-cover-overlay .album-cover-name {
   color: var(--foreground);
+  text-shadow: none;
   text-align: center;
-  padding: 0 10px;
+  position: absolute;
+  bottom: 0px;
+  /* Align near the bottom, but below the empty text/icon */
+  padding-bottom: 20px;
+}
+
+.album-cover-empty+.album-cover-overlay {
+  padding-bottom: 24px;
+}
+
+
+.album-cover-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  box-sizing: border-box;
 }
 
 /* ⋮ メニューボタン */

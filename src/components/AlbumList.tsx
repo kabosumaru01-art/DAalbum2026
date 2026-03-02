@@ -42,8 +42,32 @@ function AlbumCard({ album, onSelect, onEdit, onDelete }: {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && onSelect(album)}
             >
-                <Folder className="album-card-icon" />
-                <span className="album-card-name">{album.name}</span>
+                {/* サムネイルコラージュ */}
+                <div className="album-cover-container">
+                    {(!album.coverMedia || album.coverMedia.length === 0) ? (
+                        <div className="album-cover-empty">
+                            <Folder className="album-cover-empty-icon" />
+                            <span className="album-cover-empty-text">写真がありません</span>
+                        </div>
+                    ) : (
+                        <div className={`album-cover-grid grid-${Math.min(album.coverMedia.length, 4)}`}>
+                            {album.coverMedia.slice(0, 4).map((media, index) => (
+                                <div key={media.id} className={`album-cover-item item-${index + 1}`}>
+                                    {media.type === 'video' ? (
+                                        <video src={media.url} className="album-cover-img" muted loop playsInline disablePictureInPicture />
+                                    ) : (
+                                        <img src={media.url} alt="" className="album-cover-img" loading="lazy" />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* アルバム名のオーバーレイ */}
+                    <div className="album-cover-overlay">
+                        <span className="album-cover-name">{album.name}</span>
+                    </div>
+                </div>
             </div>
 
             {/* ⋮ メニューボタン */}

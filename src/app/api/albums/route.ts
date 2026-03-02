@@ -8,7 +8,21 @@ export async function GET(request: Request) {
     const parentId = searchParams.get('parentId');
     try {
         const albums = await db.getAlbums(parentId);
-        return NextResponse.json(albums);
+
+        // Fetch covers for all albums in parallel
+        const albumsWithCovers = await Promise.all(
+            albums.map(async (album) => {
+                try {
+                    const covers = await db.getAlbumCovers(album.id, 4);
+                    return { ...album, coverMedia: covers };
+                } catch (err) {
+                    console.error(`Failed to fetch covers for album ${album.id}:`, err);
+                    return { ...album, coverMedia: [] }; // Return empty array on error
+                }
+            })
+        );
+
+        return NextResponse.json(albumsWithCovers);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch albums' }, { status: 500 });
     }

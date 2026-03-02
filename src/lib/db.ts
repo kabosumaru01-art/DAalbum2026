@@ -5,6 +5,7 @@ export type Album = {
     name: string;
     parent_id: string | null;
     created_at?: string;
+    coverMedia?: Media[]; // Added for Pinterest-like cover thumbnails
 };
 
 export type Media = {
@@ -145,5 +146,18 @@ export const db = {
         }
 
         return breadcrumbs;
+    },
+
+    // Get cover media for an album
+    async getAlbumCovers(albumId: string, limit: number = 4) {
+        const { data, error } = await supabase
+            .from('media')
+            .select('*')
+            .eq('album_id', albumId)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (error) throw error;
+        return data as Media[];
     }
 };
